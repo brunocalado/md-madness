@@ -11,7 +11,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.newsConfig = {
             title: options.title || "📰 Arkham Advertiser",
             uuid: options.uuid,
-            ads: options.ads, // UUID do Journal de Ads (Opcional)
+            ads: options.ads, 
             sound: "modules/md-madness/assets/sfx/paperflip.mp3"
         };
 
@@ -50,13 +50,10 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const favorites = prefs.favorites || [];
         const hidelist = prefs.hidelist || [];
 
-        // --- LÓGICA DE ADS (CONDICIONAL) ---
+        // --- ADS LOGIC ---
         let adContent = null;
-
-        // Só processa Ads se o argumento 'ads' foi passado
         if (this.newsConfig.ads) {
             adContent = this._cachedAd;
-            
             if (!adContent) {
                 try {
                     const adJournal = fromUuidSync(this.newsConfig.ads) || await fromUuid(this.newsConfig.ads);
@@ -74,19 +71,15 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     console.warn("NewsApp | Erro ao carregar Ads:", err);
                 }
             }
-            
-            // Se configurou ads mas falhou em achar conteúdo, usa fallback para não quebrar layout se desejar
-            // Se preferir que suma caso falhe, remova esta linha.
-            if (!adContent) adContent = "Anuncie aqui! Contate a redação do Arkham Advertiser.";
+            if (!adContent) adContent = "Anuncie aqui! Contate a redação.";
         } 
-        // Se this.newsConfig.ads for undefined/null, adContent continua null e o footer não renderiza.
 
-
-        // --- LÓGICA DE PÁGINAS ---
+        // --- PAGE LOGIC ---
         let allPages = journal ? journal.pages.contents : [];
         allPages = allPages.filter(p => p.name !== "metadata" && p.testUserPermission(game.user, "OBSERVER"));
         allPages.sort((a, b) => a.sort - b.sort);
 
+        // Filtra as páginas baseadas no filtro atual
         const filteredPages = allPages.filter(p => {
             const isFav = favorites.includes(p.id);
             const isHidden = hidelist.includes(p.id);
@@ -95,9 +88,31 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return !isHidden; 
         });
 
-        if (!this.uiState.isAnimating && !this.uiState.viewedPageId && this.uiState.selectedPageId) {
-            const exists = filteredPages.some(p => p.id === this.uiState.selectedPageId);
-            if (exists) this.uiState.viewedPageId = this.uiState.selectedPageId;
+        // --- AUTO-SELECTION LOGIC (UPDATED) ---
+        // Se não estamos no meio de uma animação, validamos o estado
+        if (!this.uiState.isAnimating) {
+            
+            // Verifica se a seleção atual ainda é válida dentro do novo filtro
+            const isValidSelection = this.uiState.selectedPageId && filteredPages.some(p => p.id === this.uiState.selectedPageId);
+
+            if (!isValidSelection) {
+                // Se não temos seleção ou ela não é mais válida no filtro atual
+                if (filteredPages.length > 0) {
+                    // Seleciona automaticamente a primeira página da lista
+                    this.uiState.selectedPageId = filteredPages[0].id;
+                    this.uiState.viewedPageId = filteredPages[0].id;
+                } else {
+                    // Nenhuma página disponível neste filtro
+                    this.uiState.selectedPageId = "";
+                    this.uiState.viewedPageId = "";
+                }
+            } else {
+                // Se temos uma seleção válida, garante que o que está sendo visto é o selecionado
+                // (Exceto durante animação, mas já checamos isAnimating acima)
+                if (!this.uiState.viewedPageId) {
+                    this.uiState.viewedPageId = this.uiState.selectedPageId;
+                }
+            }
         }
 
         let contentPage = null;
@@ -155,8 +170,13 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         event.preventDefault();
         event.stopPropagation();
         this.uiState.filter = event.target.value;
-        this.uiState.selectedPageId = "";
-        this.uiState.viewedPageId = ""; 
+        
+        // Removemos o reset forçado aqui. Deixamos o _prepareContext decidir:
+        // 1. Se a página atual ainda existe no novo filtro, mantemos ela.
+        // 2. Se não existe, o _prepareContext vai selecionar a primeira da lista.
+        // this.uiState.selectedPageId = ""; 
+        // this.uiState.viewedPageId = ""; 
+        
         this.render();
     }
 
@@ -216,7 +236,6 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         await this._modifyList("hidelist", this.uiState.selectedPageId, true);
         await this._modifyList("favorites", this.uiState.selectedPageId);
-        
         this.render();
     }
 
@@ -227,7 +246,6 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         await this._modifyList("favorites", this.uiState.selectedPageId, true);
         await this._modifyList("hidelist", this.uiState.selectedPageId);
-        
         this.render();
     }
 

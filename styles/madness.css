@@ -43,8 +43,10 @@
 
 .news-layout {
     display: grid;
-    /* Grid dinâmico: Se o footer não existir, o 'auto' final vira 0 */
-    grid-template-rows: auto 1fr auto; 
+    /* Linha 1: Header (Tamanho do conteúdo) 
+       Linha 2: Conteúdo (Preenche o resto) 
+       Linha 3: Footer (Fixo exato de 85px) */
+    grid-template-rows: max-content 1fr 85px; 
     height: 100%;
     width: 100%;
     overflow: hidden; 
@@ -101,13 +103,13 @@
 
 /* -- ESTILO ESPECÍFICO DE FAVORITO ATIVO (DOURADO) -- */
 .action-btn.active.btn-fav { 
-    background: #fff9c4; /* Amarelo muito claro */
-    color: #fbc02d;       /* Dourado forte */
+    background: #fff9c4; 
+    color: #fbc02d;       
     border-color: #fbc02d; 
 }
 .action-btn.active.btn-fav i { text-shadow: 0 0 2px rgba(251, 192, 45, 0.5); }
 
-/* -- ESTILO HIDE ATIVO (CINZA ESCURO / VERMELHO) -- */
+/* -- ESTILO HIDE ATIVO -- */
 .action-btn.active.btn-hide { background: #333; color: #fff; border-color: #000; }
 .action-btn.active.btn-hide i.fa-eye-slash { color: #ff6b6b; }
 
@@ -163,13 +165,13 @@
 
 
 /* ==================================================== */
-/* ADS / FOOTER STYLES (V2 - Dark & Stable)             */
+/* ADS / FOOTER STYLES (V3 - Fixed Height & Chamativo)  */
 /* ==================================================== */
 
 .news-ad-footer {
-    background: #1a1a1a;       /* Fundo Dark */
-    color: #f0e6d2;            /* Texto Creme/Dourado */
-    border-top: 3px solid #8a1e1e; /* Borda Vermelho Sangue */
+    background: #111;          /* Fundo Preto Profundo */
+    color: #fff9c4;            /* Texto Creme Dourado */
+    border-top: 4px solid #fbc02d; /* Borda Amarela Ouro de Atenção */
     
     padding: 10px 15px;
     font-family: 'Courier New', Courier, monospace;
@@ -179,24 +181,23 @@
     justify-content: center;
     text-align: center;
     
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.4); /* Sombra mais dramática */
-    z-index: 50;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.6); /* Sombra Profunda */
+    z-index: 1000; /* Garante que fique acima de tudo */
     
-    /* Estabilidade de Layout */
-    min-height: 80px;  /* Altura mínima garantida */
-    max-height: 120px; /* Altura máxima se texto for longo */
-    overflow-y: auto;  /* Scroll manual se necessário */
-    flex-shrink: 0;    /* Impede que o grid "esmague" o footer */
+    /* Preenchimento do Grid Cell */
+    height: 100%; 
+    width: 100%;
+    box-sizing: border-box; /* Garante que o padding não estoure a altura */
+    overflow: hidden;       /* Evita scrollbar no footer */
 }
 
-/* Esconde barra de rolagem no footer para visual limpo, mas permite scroll */
-.news-ad-footer::-webkit-scrollbar { width: 4px; }
-.news-ad-footer::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
-
 .ad-content {
-    font-size: 0.95em;
+    font-size: 1.0em;
     line-height: 1.4;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-shadow: 0 0 5px rgba(251, 192, 45, 0.3); /* Leve brilho no texto */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: 100%;
 }
 
 /* Journal Spacing Fix */
