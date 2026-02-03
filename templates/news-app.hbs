@@ -22,14 +22,12 @@
         </div>
 
         <div class="toolbar-actions">
-            <!-- Adicionada classe btn-fav -->
             <button type="button" id="btn-favorite" class="action-btn btn-fav {{#if isFavorite}}active{{/if}}" 
                     data-tooltip="{{#if isFavorite}}Remover Favorito{{else}}Favoritar{{/if}}"
                     {{#unless selectedPageId}}disabled{{/unless}}>
                 <i class="{{#if isFavorite}}fas{{else}}far{{/if}} fa-star"></i>
             </button>
 
-            <!-- Adicionada classe btn-hide -->
             <button type="button" id="btn-hide" class="action-btn btn-hide {{#if isHidden}}active{{/if}}" 
                     data-tooltip="{{#if isHidden}}Mostrar{{else}}Ocultar{{/if}}"
                     {{#unless selectedPageId}}disabled{{/unless}}>
@@ -64,4 +62,13 @@
             {{/if}}
         </div>
     </section>
+
+    <!-- ÁREA DE ANÚNCIO (Renderizado Apenas se adContent existir) -->
+    {{#if adContent}}
+    <footer class="news-ad-footer">
+        <div class="ad-content">
+            {{adContent}}
+        </div>
+    </footer>
+    {{/if}}
 </div>

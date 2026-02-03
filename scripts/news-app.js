@@ -11,6 +11,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.newsConfig = {
             title: options.title || "📰 Arkham Advertiser",
             uuid: options.uuid,
+            ads: options.ads, // UUID do Journal de Ads (Opcional)
             sound: "modules/md-madness/assets/sfx/paperflip.mp3"
         };
 
@@ -21,6 +22,8 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             animationClass: "",
             isAnimating: false
         };
+
+        this._cachedAd = null;
     }
   
     static DEFAULT_OPTIONS = {
@@ -34,7 +37,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         },
         position: { width: 800, height: 850 },
         classes: ["md-news-app"],
-        actions: {} // Listeners manuais
+        actions: {} 
     };
 
     static PARTS = {
@@ -47,7 +50,39 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const favorites = prefs.favorites || [];
         const hidelist = prefs.hidelist || [];
 
-        // Recupera todas as páginas ordenadas
+        // --- LÓGICA DE ADS (CONDICIONAL) ---
+        let adContent = null;
+
+        // Só processa Ads se o argumento 'ads' foi passado
+        if (this.newsConfig.ads) {
+            adContent = this._cachedAd;
+            
+            if (!adContent) {
+                try {
+                    const adJournal = fromUuidSync(this.newsConfig.ads) || await fromUuid(this.newsConfig.ads);
+                    if (adJournal) {
+                        const pages = adJournal.pages.contents;
+                        if (pages.length > 0) {
+                            const randomPage = pages[Math.floor(Math.random() * pages.length)];
+                            const tempDiv = document.createElement("div");
+                            tempDiv.innerHTML = randomPage.text.content;
+                            adContent = (tempDiv.textContent || tempDiv.innerText || "").trim();
+                            this._cachedAd = adContent;
+                        }
+                    }
+                } catch (err) {
+                    console.warn("NewsApp | Erro ao carregar Ads:", err);
+                }
+            }
+            
+            // Se configurou ads mas falhou em achar conteúdo, usa fallback para não quebrar layout se desejar
+            // Se preferir que suma caso falhe, remova esta linha.
+            if (!adContent) adContent = "Anuncie aqui! Contate a redação do Arkham Advertiser.";
+        } 
+        // Se this.newsConfig.ads for undefined/null, adContent continua null e o footer não renderiza.
+
+
+        // --- LÓGICA DE PÁGINAS ---
         let allPages = journal ? journal.pages.contents : [];
         allPages = allPages.filter(p => p.name !== "metadata" && p.testUserPermission(game.user, "OBSERVER"));
         allPages.sort((a, b) => a.sort - b.sort);
@@ -87,12 +122,12 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             filter: this.uiState.filter,
             isFavorite,
             isHidden,
-            animationClass: this.uiState.animationClass
+            animationClass: this.uiState.animationClass,
+            adContent: adContent 
         };
     }
 
     _onRender(context, options) {
-        // Listeners manuais
         const filterSelect = this.element.querySelector('#filter-select');
         if (filterSelect) {
             filterSelect.value = this.uiState.filter;
@@ -132,7 +167,6 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const newPageId = event.target.value;
         if (newPageId === this.uiState.selectedPageId || this.uiState.isAnimating) return;
 
-        // --- LÓGICA DIRECIONAL ---
         const journal = await this._getJournal();
         const allPages = journal.pages.contents
             .filter(p => p.name !== "metadata")
@@ -141,7 +175,6 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const oldIndex = allPages.findIndex(p => p.id === this.uiState.selectedPageId);
         const newIndex = allPages.findIndex(p => p.id === newPageId);
         
-        // Se newIndex < oldIndex, estamos voltando (direção 'back')
         const direction = (oldIndex !== -1 && newIndex < oldIndex) ? 'back' : 'forward';
 
         this.uiState.isAnimating = true;
@@ -151,17 +184,15 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             foundry.audio.AudioHelper.play({ src: this.newsConfig.sound, volume: 0.5, autoplay: true, loop: false }, false);
         }
 
-        // 1. ANIMAÇÃO DE SAÍDA
         if (direction === 'back') {
-             this.uiState.animationClass = "page-back-out"; // Vira da esq p/ dir
+             this.uiState.animationClass = "page-back-out";
         } else {
-             this.uiState.animationClass = "page-turn-out"; // Vira da dir p/ esq (padrão)
+             this.uiState.animationClass = "page-turn-out";
         }
         await this.render();
 
         await new Promise(r => setTimeout(r, 450));
 
-        // 2. TROCA CONTEÚDO E ANIMAÇÃO DE ENTRADA
         this.uiState.viewedPageId = newPageId;
         
         if (direction === 'back') {
@@ -171,7 +202,6 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
         await this.render();
 
-        // 3. LIMPEZA
         setTimeout(() => {
             this.uiState.animationClass = "";
             this.uiState.isAnimating = false;
@@ -184,9 +214,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         event.stopPropagation();
         if (!this.uiState.selectedPageId) return;
 
-        // Remove de HIDE primeiro (Exclusividade)
-        await this._modifyList("hidelist", this.uiState.selectedPageId, true); // true = force remove
-        // Alterna Favorito
+        await this._modifyList("hidelist", this.uiState.selectedPageId, true);
         await this._modifyList("favorites", this.uiState.selectedPageId);
         
         this.render();
@@ -197,9 +225,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         event.stopPropagation();
         if (!this.uiState.selectedPageId) return;
 
-        // Remove de FAVORITE primeiro (Exclusividade)
-        await this._modifyList("favorites", this.uiState.selectedPageId, true); // true = force remove
-        // Alterna Hide
+        await this._modifyList("favorites", this.uiState.selectedPageId, true);
         await this._modifyList("hidelist", this.uiState.selectedPageId);
         
         this.render();
@@ -227,11 +253,6 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         await metadataPage.setFlag(MODULE_ID, actorKey, currentData);
-    }
-
-    // Mantido por compatibilidade
-    async _updateMetadataFlag(type, pageId) {
-        await this._modifyList(type, pageId);
     }
 
     async _getJournal() {
