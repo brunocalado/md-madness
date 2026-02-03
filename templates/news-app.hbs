@@ -6,9 +6,13 @@
                 <option value="all" {{#if (eq filter "all")}}selected{{/if}}>Todas</option>
                 <option value="favorites" {{#if (eq filter "favorites")}}selected{{/if}}>Favoritos</option>
                 <option value="hidden" {{#if (eq filter "hidden")}}selected{{/if}}>Ocultas</option>
+                {{#if enableObituary}}
+                <option value="obituary" {{#if (eq filter "obituary")}}selected{{/if}}>Obituário</option>
+                {{/if}}
             </select>
         </div>
 
+        {{#unless isObituaryMode}}
         <div class="toolbar-group page-group">
             <label><i class="fas fa-newspaper"></i> Manchete</label>
             <select id="page-select" name="pageId" class="main-select">
@@ -34,31 +38,61 @@
                 <i class="fas {{#if isHidden}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
             </button>
         </div>
+        {{/unless}}
     </header>
 
     <section class="news-viewport">
         <div id="news-content-area" class="news-paper {{animationClass}}">
-            {{#if contentPage}}
-                {{#if (eq contentPage.type "image")}}
-                    <h1 class="paper-title">{{contentPage.name}}</h1>
-                    <figure class="paper-figure">
-                        <img src="{{contentPage.src}}" alt="{{contentPage.name}}">
-                        {{#if contentPage.image.caption}}
-                            <figcaption>{{contentPage.image.caption}}</figcaption>
-                        {{/if}}
-                    </figure>
+            
+            {{#if isObituaryMode}}
+                <!-- VISÃO ESPECIAL DE OBITUÁRIO -->
+                <div class="obituary-list">
+                    <h1 class="paper-title" style="text-align: center; border-bottom: 3px double #000;">
+                        ✝ Obituário & Falecimentos
+                    </h1>
+                    {{#each obituaryList}}
+                    <div class="obituary-entry">
+                        <div class="obit-image-container">
+                            <img src="{{this.image}}" alt="{{this.name}}" class="obit-img">
+                        </div>
+                        <div class="obit-text">
+                            <h3 class="obit-name">{{this.name}}</h3>
+                            <div class="obit-body">
+                                {{{this.content}}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/each}}
+                    
+                    {{#unless obituaryList.length}}
+                    <p class="paper-empty">Nenhum registro de falecimento encontrado.</p>
+                    {{/unless}}
+                </div>
+
+            {{else}}
+                <!-- VISÃO PADRÃO DE JORNAL -->
+                {{#if contentPage}}
+                    {{#if (eq contentPage.type "image")}}
+                        <h1 class="paper-title">{{contentPage.name}}</h1>
+                        <figure class="paper-figure">
+                            <img src="{{contentPage.src}}" alt="{{contentPage.name}}">
+                            {{#if contentPage.image.caption}}
+                                <figcaption>{{contentPage.image.caption}}</figcaption>
+                            {{/if}}
+                        </figure>
+                    {{else}}
+                        <h1 class="paper-title">{{contentPage.name}}</h1>
+                        <div class="paper-body">
+                            {{{contentPage.text.content}}}
+                        </div>
+                    {{/if}}
                 {{else}}
-                    <h1 class="paper-title">{{contentPage.name}}</h1>
-                    <div class="paper-body">
-                        {{{contentPage.text.content}}}
+                    <div class="paper-empty">
+                        <i class="fas fa-newspaper"></i>
+                        <h3>Edição do Dia</h3>
+                        <p>Selecione uma manchete acima para começar a leitura.</p>
                     </div>
                 {{/if}}
-            {{else}}
-                <div class="paper-empty">
-                    <i class="fas fa-newspaper"></i>
-                    <h3>Edição do Dia</h3>
-                    <p>Selecione uma manchete acima para começar a leitura.</p>
-                </div>
             {{/if}}
         </div>
     </section>

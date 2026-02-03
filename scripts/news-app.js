@@ -11,7 +11,8 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.newsConfig = {
             title: options.title || "📰 Arkham Advertiser",
             uuid: options.uuid,
-            ads: options.ads, 
+            ads: options.ads,
+            obituary: options.obituary || null, // Agora armazena o UUID do journal de obituário
             sound: "modules/md-madness/assets/sfx/paperflip.mp3"
         };
 
@@ -45,8 +46,20 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
 
     async _prepareContext(_options) {
-        const journal = await this._getJournal();
-        const prefs = await this._getUserPreferences(journal);
+        // Decide qual Journal carregar baseados no filtro
+        let currentJournalUuid = this.newsConfig.uuid;
+        const isObituaryMode = this.uiState.filter === "obituary";
+
+        if (isObituaryMode && this.newsConfig.obituary) {
+            currentJournalUuid = this.newsConfig.obituary;
+        }
+
+        const journal = currentJournalUuid ? (fromUuidSync(currentJournalUuid) || await fromUuid(currentJournalUuid)) : null;
+        
+        // Preferências são sempre salvas no journal PRINCIPAL para não fragmentar dados
+        const mainJournal = this.newsConfig.uuid ? (fromUuidSync(this.newsConfig.uuid) || await fromUuid(this.newsConfig.uuid)) : null;
+        const prefs = await this._getUserPreferences(mainJournal);
+        
         const favorites = prefs.favorites || [];
         const hidelist = prefs.hidelist || [];
 
@@ -79,8 +92,15 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         allPages = allPages.filter(p => p.name !== "metadata" && p.testUserPermission(game.user, "OBSERVER"));
         allPages.sort((a, b) => a.sort - b.sort);
 
-        // Filtra as páginas baseadas no filtro atual
-        const filteredPages = allPages.filter(p => {
+        // -- MODO OBITUÁRIO --
+        let obituaryList = [];
+        if (isObituaryMode) {
+            // Processa TODAS as páginas do journal de obituário
+            obituaryList = allPages.map(p => this._extractImageAndContent(p));
+        }
+
+        // -- MODO JORNAL (Filtros Normais) --
+        const filteredPages = isObituaryMode ? [] : allPages.filter(p => {
             const isFav = favorites.includes(p.id);
             const isHidden = hidelist.includes(p.id);
             if (this.uiState.filter === "favorites") return isFav;
@@ -88,27 +108,20 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             return !isHidden; 
         });
 
-        // --- AUTO-SELECTION LOGIC (UPDATED) ---
-        // Se não estamos no meio de uma animação, validamos o estado
-        if (!this.uiState.isAnimating) {
-            
-            // Verifica se a seleção atual ainda é válida dentro do novo filtro
+        // --- AUTO-SELECTION LOGIC ---
+        // Se não estiver em modo obituário, faz a seleção automática
+        if (!this.uiState.isAnimating && !isObituaryMode) {
             const isValidSelection = this.uiState.selectedPageId && filteredPages.some(p => p.id === this.uiState.selectedPageId);
 
             if (!isValidSelection) {
-                // Se não temos seleção ou ela não é mais válida no filtro atual
                 if (filteredPages.length > 0) {
-                    // Seleciona automaticamente a primeira página da lista
                     this.uiState.selectedPageId = filteredPages[0].id;
                     this.uiState.viewedPageId = filteredPages[0].id;
                 } else {
-                    // Nenhuma página disponível neste filtro
                     this.uiState.selectedPageId = "";
                     this.uiState.viewedPageId = "";
                 }
             } else {
-                // Se temos uma seleção válida, garante que o que está sendo visto é o selecionado
-                // (Exceto durante animação, mas já checamos isAnimating acima)
                 if (!this.uiState.viewedPageId) {
                     this.uiState.viewedPageId = this.uiState.selectedPageId;
                 }
@@ -116,8 +129,8 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         let contentPage = null;
-        if (this.uiState.viewedPageId) {
-            contentPage = journal.pages.get(this.uiState.viewedPageId);
+        if (this.uiState.viewedPageId && !isObituaryMode) {
+            contentPage = journal ? journal.pages.get(this.uiState.viewedPageId) : null;
         }
 
         const isFavorite = this.uiState.selectedPageId ? favorites.includes(this.uiState.selectedPageId) : false;
@@ -138,7 +151,44 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             isFavorite,
             isHidden,
             animationClass: this.uiState.animationClass,
-            adContent: adContent 
+            adContent: adContent,
+            enableObituary: !!this.newsConfig.obituary, 
+            isObituaryMode: isObituaryMode,
+            obituaryList: obituaryList 
+        };
+    }
+
+    /**
+     * Helper para extrair imagem e limpar texto para o layout de obituário
+     */
+    _extractImageAndContent(page) {
+        const defaultImg = "modules/md-madness/assets/images/obituary.webp";
+        let imgSrc = defaultImg;
+        let finalContent = "";
+
+        if (page.type === "image") {
+            imgSrc = page.src || defaultImg;
+            finalContent = page.image.caption || ""; 
+        } else {
+            // É texto. Vamos parsear o HTML para achar <img src="...">
+            const div = document.createElement("div");
+            div.innerHTML = page.text.content;
+
+            const imgElement = div.querySelector("img");
+            if (imgElement) {
+                imgSrc = imgElement.getAttribute("src") || defaultImg;
+                // Remove a imagem do texto para não duplicar visualmente
+                imgElement.remove();
+            }
+
+            finalContent = div.innerHTML;
+        }
+
+        return {
+            id: page.id,
+            name: page.name,
+            content: finalContent,
+            image: imgSrc
         };
     }
 
@@ -170,19 +220,20 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         event.preventDefault();
         event.stopPropagation();
         this.uiState.filter = event.target.value;
-        
-        // Removemos o reset forçado aqui. Deixamos o _prepareContext decidir:
-        // 1. Se a página atual ainda existe no novo filtro, mantemos ela.
-        // 2. Se não existe, o _prepareContext vai selecionar a primeira da lista.
-        // this.uiState.selectedPageId = ""; 
-        // this.uiState.viewedPageId = ""; 
-        
+        // Se mudou para obituário, limpa seleção. Se saiu, o prepareContext resolve.
+        if (this.uiState.filter === "obituary") {
+            this.uiState.selectedPageId = "";
+            this.uiState.viewedPageId = "";
+        }
         this.render();
     }
 
     async _onChangePage(event) {
         event.preventDefault(); 
         event.stopPropagation();
+        
+        // Bloqueia troca de página manual se estiver em modo obituário
+        if (this.uiState.filter === "obituary") return;
 
         const newPageId = event.target.value;
         if (newPageId === this.uiState.selectedPageId || this.uiState.isAnimating) return;
@@ -232,7 +283,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onToggleFavorite(event) {
         event.preventDefault();
         event.stopPropagation();
-        if (!this.uiState.selectedPageId) return;
+        if (!this.uiState.selectedPageId || this.uiState.filter === "obituary") return;
 
         await this._modifyList("hidelist", this.uiState.selectedPageId, true);
         await this._modifyList("favorites", this.uiState.selectedPageId);
@@ -242,7 +293,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onToggleHide(event) {
         event.preventDefault();
         event.stopPropagation();
-        if (!this.uiState.selectedPageId) return;
+        if (!this.uiState.selectedPageId || this.uiState.filter === "obituary") return;
 
         await this._modifyList("favorites", this.uiState.selectedPageId, true);
         await this._modifyList("hidelist", this.uiState.selectedPageId);
@@ -273,6 +324,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         await metadataPage.setFlag(MODULE_ID, actorKey, currentData);
     }
 
+    // Helper para pegar o jornal PRINCIPAL (usado para salvar flags e carregar páginas padrão)
     async _getJournal() {
         if (this.newsConfig.uuid) return fromUuid(this.newsConfig.uuid);
         return null;

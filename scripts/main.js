@@ -10,7 +10,8 @@ export const SETTINGS = {
     AUTO_UNPAUSE: 'autoUnpause',
     JOURNAL_SPACING: 'journalSpacing',
     SET_ENGLISH: 'setEnglish',
-    TOKEN_ROTATE: 'tokenAutoRotate'
+    TOKEN_ROTATE: 'tokenAutoRotate',
+    TOKEN_BLINK: 'tokenAutoBlink'
 };
 
 /**
@@ -62,6 +63,16 @@ Hooks.once('init', () => {
         default: false
     });
 
+    // 5. Auto Token Blink (NEW)
+    game.settings.register(MODULE_ID, SETTINGS.TOKEN_BLINK, {
+        name: 'Auto Token Blink',
+        hint: 'If enabled, all newly created actors will have their Prototype Token animation set to "Blink" by default.',
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: true
+    });
+
     // --- REGISTER GLOBAL API ---
     window.madness = {
         QuickNames: () => {
@@ -72,6 +83,7 @@ Hooks.once('init', () => {
          * @param {Object} args
          * @param {string} args.title - O título da janela (Ex: "📰 Arkham Advertiser")
          * @param {string} args.uuid - O UUID do JournalEntry a ser lido
+         * @param {string} [args.obituary] - UUID do Jornal de Obituários (Opcional)
          */
         News: (args = {}) => {
             // Verifica se o UUID foi passado, senão avisa
@@ -80,6 +92,49 @@ Hooks.once('init', () => {
                 return;
             }
             new NewsApp(args).render(true);
+        },
+        /**
+         * Atualiza o Prototype Token de todos os Actors do mundo em massa.
+         * @param {Object} changes - Objeto com as configurações a serem aplicadas (Ex: { movementAction: "blink" })
+         */
+        SetPrototypeToken: async (changes = {}) => {
+            // Verificação de Segurança: Apenas GM
+            if (!game.user.isGM) {
+                ui.notifications.warn(`${MODULE_ID} | Apenas o Gamemaster pode executar operações em massa.`);
+                return;
+            }
+
+            // Verificação de Dados
+            if (!changes || Object.keys(changes).length === 0) {
+                ui.notifications.warn(`${MODULE_ID} | Nenhum parâmetro fornecido. Exemplo de uso: madness.SetPrototypeToken({ movementAction: "blink" })`);
+                return;
+            }
+
+            // Confirmação (Opcional, mas recomendada para operações destrutivas em massa)
+            const confirmed = await Dialog.confirm({
+                title: "Atualização em Massa: Prototype Tokens",
+                content: `<p>Você está prestes a atualizar o <strong>Prototype Token</strong> de <strong>${game.actors.size}</strong> atores.</p>
+                          <p>Alterações: <code>${JSON.stringify(changes)}</code></p>
+                          <p>Isso não pode ser desfeito facilmente. Deseja continuar?</p>`
+            });
+
+            if (!confirmed) return;
+
+            // Prepara a lista de atualizações (Bulk Update)
+            const updates = game.actors.map(actor => ({
+                _id: actor.id,
+                prototypeToken: changes
+            }));
+
+            // Executa a atualização
+            try {
+                await Actor.updateDocuments(updates);
+                ui.notifications.info(`${MODULE_ID} | Sucesso! ${updates.length} atores foram atualizados.`);
+                console.log(`${MODULE_ID} | SetPrototypeToken executado para ${updates.length} atores.`, changes);
+            } catch (err) {
+                console.error(err);
+                ui.notifications.error(`${MODULE_ID} | Erro ao atualizar atores. Veja o console (F12).`);
+            }
         }
     };
     
@@ -100,6 +155,22 @@ Hooks.once('ready', async () => {
 
     // 3. Apply Default Preferences (Language, Modules, etc)
     await applyDefaultPreferences();
+});
+
+/**
+ * PRE-CREATE ACTOR HOOK (NEW)
+ * Intercepta a criação de novos atores para definir o padrão Blink.
+ */
+Hooks.on("preCreateActor", (actor) => {
+    // Verifica se a configuração está habilitada
+    const useBlink = game.settings.get(MODULE_ID, SETTINGS.TOKEN_BLINK);
+    
+    if (useBlink) {
+        // updateSource modifica os dados antes de serem salvos no DB
+        actor.updateSource({
+            "prototypeToken.movementAction": "blink"
+        });
+    }
 });
 
 /**

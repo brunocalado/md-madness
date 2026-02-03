@@ -37,16 +37,13 @@
     margin: 0 !important;
     background: #d8d0ba;
     display: block; 
-    overflow: visible !important;
+    overflow: hidden !important; /* Forces scroll management to inner elements */
     height: 100%;
 }
 
 .news-layout {
-    display: grid;
-    /* Linha 1: Header (Tamanho do conteúdo) 
-       Linha 2: Conteúdo (Preenche o resto) 
-       Linha 3: Footer (Fixo exato de 85px) */
-    grid-template-rows: max-content 1fr 85px; 
+    display: flex; 
+    flex-direction: column;
     height: 100%;
     width: 100%;
     overflow: hidden; 
@@ -62,6 +59,7 @@
     z-index: 100;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     position: relative;
+    flex: 0 0 auto; 
 }
 
 .toolbar-group { display: flex; flex-direction: column; gap: 2px; }
@@ -101,7 +99,6 @@
 .action-btn:hover:not(:disabled) { background: #fff; color: #000; }
 .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* -- ESTILO ESPECÍFICO DE FAVORITO ATIVO (DOURADO) -- */
 .action-btn.active.btn-fav { 
     background: #fff9c4; 
     color: #fbc02d;       
@@ -109,14 +106,13 @@
 }
 .action-btn.active.btn-fav i { text-shadow: 0 0 2px rgba(251, 192, 45, 0.5); }
 
-/* -- ESTILO HIDE ATIVO -- */
 .action-btn.active.btn-hide { background: #333; color: #fff; border-color: #000; }
 .action-btn.active.btn-hide i.fa-eye-slash { color: #ff6b6b; }
 
 
 .news-viewport {
     position: relative;
-    overflow-y: auto;
+    overflow-y: auto; 
     overflow-x: hidden;
     background-color: #f1efe6;
     background-image: url('../../../ui/parchment.jpg');
@@ -125,8 +121,9 @@
     z-index: 0;
     perspective: 1500px;
     
-    /* Garante que o conteúdo não quebre o grid */
-    min-height: 0; 
+    flex: 1; 
+    min-height: 0;
+    display: block;
 }
 
 .news-paper { 
@@ -165,13 +162,68 @@
 
 
 /* ==================================================== */
-/* ADS / FOOTER STYLES (V3 - Fixed Height & Chamativo)  */
+/* OBITUARY STYLES (UPDATED)                            */
+/* ==================================================== */
+.obituary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.obituary-entry {
+    display: flex;
+    flex-direction: row; /* Imagem esquerda, texto direita */
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #444; /* Borda ao redor do bloco */
+    background: rgba(0,0,0,0.02); /* Fundo leve para destacar o bloco */
+    align-items: flex-start;
+}
+
+.obit-text {
+    flex: 1; 
+}
+
+.obit-name {
+    font-family: 'Modesto Condensed', serif; 
+    font-size: 1.6em;
+    margin-bottom: 5px;
+    margin-top: 0;
+    color: #000;
+}
+
+.obit-body {
+    font-size: 0.9em;
+    line-height: 1.4;
+    text-align: justify;
+}
+
+.obit-image-container {
+    flex: 0 0 120px; 
+    height: 120px;   
+    border: 3px solid #111;
+    background: #000;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.obit-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    border: none !important; 
+    box-shadow: none !important;
+}
+
+
+/* ==================================================== */
+/* ADS / FOOTER STYLES (V3 - Fixed Flex)  */
 /* ==================================================== */
 
 .news-ad-footer {
-    background: #111;          /* Fundo Preto Profundo */
-    color: #fff9c4;            /* Texto Creme Dourado */
-    border-top: 4px solid #fbc02d; /* Borda Amarela Ouro de Atenção */
+    background: #111;          
+    color: #fff9c4;            
+    border-top: 4px solid #fbc02d; 
     
     padding: 10px 15px;
     font-family: 'Courier New', Courier, monospace;
@@ -181,20 +233,22 @@
     justify-content: center;
     text-align: center;
     
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.6); /* Sombra Profunda */
-    z-index: 1000; /* Garante que fique acima de tudo */
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.6); 
+    z-index: 1000; 
     
-    /* Preenchimento do Grid Cell */
-    height: 100%; 
+    /* Configuração Flex Fixa */
+    flex: 0 0 85px;  
+    height: 85px;    
     width: 100%;
-    box-sizing: border-box; /* Garante que o padding não estoure a altura */
-    overflow: hidden;       /* Evita scrollbar no footer */
+    
+    box-sizing: border-box; 
+    overflow: hidden; 
 }
 
 .ad-content {
     font-size: 1.0em;
     line-height: 1.4;
-    text-shadow: 0 0 5px rgba(251, 192, 45, 0.3); /* Leve brilho no texto */
+    text-shadow: 0 0 5px rgba(251, 192, 45, 0.3); 
     text-transform: uppercase;
     letter-spacing: 1px;
     width: 100%;
