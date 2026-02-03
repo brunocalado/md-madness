@@ -1,0 +1,45 @@
+{
+  "id": "md-madness",
+  "title": "MD Madness",
+  
+  "version": "0.0.1",
+  
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  
+  "authors": [
+    {
+      "name": "Madness"
+    }
+  ],
+  
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  
+  "styles": [
+    "styles/madness.css"
+  ],
+  
+  "description": "A customized module for V13 automation.",
+  
+  "packs"  : [
+    {
+      "label": "Names",
+      "name": "names",
+      "path": "packs/names",
+      "type": "RollTable",
+      "flags": {},
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }  
+  ],  
+  
+  "url": "",
+  "manifest": "",
+  "download": ""
+}

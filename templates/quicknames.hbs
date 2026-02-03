@@ -1,0 +1,51 @@
+<div class="quicknames-content">
+    <!-- Origin Selection (Grid of Buttons) -->
+    <div class="form-group">
+        <label>Origin</label>
+        <div class="origin-grid">
+            {{#each origins}}
+            <input type="radio" id="origin-{{this}}" name="origin" value="{{this}}" {{#if @first}}checked{{/if}}>
+            <label class="origin-btn" for="origin-{{this}}">{{this}}</label>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Gender Selection -->
+    <div class="form-group gender-group">
+        <label>Gender</label>
+        <div class="radio-group">
+            <input type="radio" id="gender-all" name="gender" value="all" checked>
+            <label class="radio-label" for="gender-all">All Names</label>
+
+            <input type="radio" id="gender-female" name="gender" value="Female">
+            <label class="radio-label" for="gender-female">Female</label>
+
+            <input type="radio" id="gender-male" name="gender" value="Male">
+            <label class="radio-label" for="gender-male">Male</label>
+        </div>
+    </div>
+
+    <!-- Surname Checkbox (Inline) -->
+    <div class="form-group inline-group">
+        <input type="checkbox" name="hasSurname" id="has-surname" checked>
+        <label for="has-surname" class="pointer">Include Surname?</label>
+    </div>
+
+    <!-- Result Display & Copy -->
+    <div class="form-group result-group">
+        <label for="name-result">Generated Name</label>
+        <div class="result-row">
+            <input type="text" name="result" id="name-result" placeholder="Click generate..." readonly value="{{result}}">
+            <button type="button" class="copy-btn" data-action="copyName" data-tooltip="Copy to Clipboard">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-footer">
+        <button type="button" class="generate-btn" data-action="generateName">
+            <i class="fas fa-dice"></i> Generate
+        </button>
+    </div>
+</div>

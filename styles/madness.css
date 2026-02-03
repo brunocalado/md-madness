@@ -1,0 +1,184 @@
+/* * CRITICAL FIX: Strict Namespacing */
+.window-app.quicknames-app .window-content {
+    background: url("../../../ui/parchment.jpg") repeat;
+    color: #191813;
+    padding: 8px;
+}
+
+/* === QUICKNAMES STYLES (Mantidos) === */
+.quicknames-app .quicknames-content { display: flex; flex-direction: column; gap: 8px; font-family: "Signika", sans-serif; }
+.quicknames-app .quicknames-content .form-group:first-child { margin-top: 0; }
+.quicknames-app .quicknames-content label { font-weight: bold; font-size: 1.1em; color: #191813; margin-bottom: 2px; }
+.quicknames-app .origin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 2px; }
+.quicknames-app .origin-grid input[type="radio"] { display: none; }
+.quicknames-app .origin-grid .origin-btn { text-align: center; padding: 6px; background: rgba(255, 255, 255, 0.9); border: 1px solid #7a7971; border-radius: 3px; cursor: pointer; font-size: 0.95em; font-weight: bold; color: #000000; transition: all 0.2s; }
+.quicknames-app .origin-grid input[type="radio"]:checked + .origin-btn { background: #322d26; color: #ffffff; border-color: #000; }
+.quicknames-app .origin-grid .origin-btn:hover { background: #ffffff; color: #000; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+.quicknames-app .radio-group { display: flex; gap: 5px; background: rgba(0, 0, 0, 0.05); padding: 4px; border-radius: 5px; }
+.quicknames-app .radio-group input[type="radio"] { display: none; }
+.quicknames-app .radio-group .radio-label { flex: 1; text-align: center; padding: 6px; cursor: pointer; background: rgba(255, 255, 255, 0.9); border: 1px solid #999; border-radius: 3px; font-size: 0.95em; font-weight: bold; color: #000000; }
+.quicknames-app .radio-group input[type="radio"]:checked + .radio-label { background: #322d26; color: #fff; border-color: #000; }
+.quicknames-app .form-group.inline-group { display: flex; flex-direction: row; align-items: center; gap: 8px; background: #ffffff; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+.quicknames-app .inline-group input[type="checkbox"] { margin: 0; width: 18px; height: 18px; }
+.quicknames-app .inline-group label.pointer { cursor: pointer; margin-bottom: 0; color: #000000; font-weight: bold; }
+.quicknames-app .result-row { display: flex; gap: 5px; }
+.quicknames-app #name-result { flex: 1; font-size: 1.3em; text-align: center; height: 38px; font-family: "Signika", sans-serif; background: #ffffff; border: 1px solid #7a7971; color: #000; font-weight: bold; }
+.quicknames-app .copy-btn { width: 38px; flex: 0 0 38px; border: 1px solid #7a7971; background: #e0e0d0; color: #322d26; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; line-height: normal; padding: 0; }
+.quicknames-app .copy-btn:hover { background: #fff; color: #000; border-color: #000; }
+.quicknames-app .generate-btn { background: #6c1818; color: white; border: 1px solid #2e0808; font-size: 1.3em; padding: 10px; cursor: pointer; width: 100%; border-radius: 3px; font-family: "Signika", sans-serif; font-weight: bold; margin-top: 5px; line-height: normal; }
+.quicknames-app .generate-btn:hover { background: #8a1e1e; box-shadow: 0 0 8px #ff000040; }
+
+/* ==================================================== */
+/* NEWS APP STYLES                                      */
+/* ==================================================== */
+
+.md-news-app .window-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #d8d0ba;
+    display: block; 
+    overflow: visible !important;
+    height: 100%;
+}
+
+.news-layout {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; 
+}
+
+.news-toolbar {
+    background: #d8d0ba;
+    border-bottom: 3px double #333;
+    padding: 8px 12px;
+    display: flex;
+    align-items: flex-end; 
+    gap: 12px;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.toolbar-group { display: flex; flex-direction: column; gap: 2px; }
+.toolbar-group label { font-weight: bold; font-family: serif; font-size: 0.95em; color: #222; }
+.filter-group { flex: 0 0 130px; }
+.page-group { flex: 1; }
+
+.news-toolbar select {
+    width: 100%;
+    height: 32px;
+    font-family: 'Georgia', serif;
+    background: #fff;
+    border: 1px solid #444;
+    border-radius: 3px;
+    color: #000;
+    cursor: pointer;
+    pointer-events: auto !important;
+    transform: none !important;
+}
+
+.toolbar-actions { display: flex; gap: 6px; padding-bottom: 1px; }
+
+/* Botões de Ação */
+.action-btn { 
+    width: 32px; height: 32px; 
+    border: 1px solid #444; 
+    background: #e0dfd5; 
+    color: #333; 
+    border-radius: 3px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.2s; 
+}
+
+.action-btn:hover:not(:disabled) { background: #fff; color: #000; }
+.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* -- ESTILO ESPECÍFICO DE FAVORITO ATIVO (DOURADO) -- */
+.action-btn.active.btn-fav { 
+    background: #fff9c4; /* Amarelo muito claro */
+    color: #fbc02d;       /* Dourado forte */
+    border-color: #fbc02d; 
+}
+.action-btn.active.btn-fav i { text-shadow: 0 0 2px rgba(251, 192, 45, 0.5); }
+
+/* -- ESTILO HIDE ATIVO (CINZA ESCURO / VERMELHO) -- */
+.action-btn.active.btn-hide { background: #333; color: #fff; border-color: #000; }
+.action-btn.active.btn-hide i.fa-eye-slash { color: #ff6b6b; }
+
+
+.news-viewport {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #f1efe6;
+    background-image: url('../../../ui/parchment.jpg');
+    background-repeat: repeat;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    z-index: 0;
+    perspective: 1500px;
+}
+
+.news-paper { 
+    padding: 40px; 
+    min-height: 100%; 
+    font-family: 'Georgia', 'Times New Roman', serif; 
+    font-size: 1.35em; 
+    line-height: 1.6; 
+    color: #000 !important;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transform-origin: left center;
+}
+
+/* --- ANIMAÇÕES DIRECIONAIS --- */
+
+/* Avançar (Turn Page) - Página sai girando para a ESQUERDA (0 -> -90) */
+.page-turn-out { animation: turnOut 0.5s forwards ease-in; pointer-events: none; }
+/* Avançar (Turn Page) - Nova página entra vindo da DIREITA (90 -> 0) */
+.page-turn-in { animation: turnIn 0.6s forwards ease-out; }
+
+@keyframes turnOut {
+    0% { transform: rotateY(0deg); opacity: 1; filter: blur(0px); }
+    100% { transform: rotateY(-90deg); opacity: 0; filter: blur(2px); }
+}
+@keyframes turnIn {
+    0% { transform: rotateY(90deg); opacity: 0; }
+    100% { transform: rotateY(0deg); opacity: 1; }
+}
+
+/* Voltar (Back Page) - Página atual sai girando para a DIREITA (0 -> 90) */
+.page-back-out { animation: backOut 0.5s forwards ease-in; pointer-events: none; }
+/* Voltar (Back Page) - Página anterior entra vindo da ESQUERDA (-90 -> 0) */
+.page-back-in { animation: backIn 0.6s forwards ease-out; }
+
+@keyframes backOut {
+    0% { transform: rotateY(0deg); opacity: 1; filter: blur(0px); }
+    100% { transform: rotateY(90deg); opacity: 0; filter: blur(2px); }
+}
+@keyframes backIn {
+    0% { transform: rotateY(-90deg); opacity: 0; }
+    100% { transform: rotateY(0deg); opacity: 1; }
+}
+
+/* Conteúdo */
+.paper-title { font-family: 'Modesto Condensed', serif; font-size: 2.2em; color: #000; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; line-height: 1.1; }
+.paper-body, .paper-body * { color: #000 !important; background: transparent !important; text-shadow: none !important; }
+.paper-figure { text-align: center; margin: 10px 0; }
+.paper-figure img { max-width: 100%; border: 4px solid #111; box-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
+.paper-figure figcaption { font-family: serif; font-style: italic; font-weight: bold; margin-top: 8px; font-size: 0.9em; color: #333; }
+
+/* FIX: Empty State Preto */
+.paper-empty { text-align: center; margin-top: 80px; opacity: 1; color: #000000 !important; }
+.paper-empty * { color: #000000 !important; }
+.paper-empty i { font-size: 4em; margin-bottom: 15px; color: #111 !important; }
+
+/* Journal Spacing Fix */
+body.md-fix-journal-spacing .journal-entry-page .journal-page-content p { min-height: 1.5em; }
+body.md-fix-journal-spacing .journal-entry-page .journal-page-content p:empty::before,
+body.md-fix-journal-spacing .journal-entry-page .journal-page-content p:has(br:only-child)::before { content: "\00a0"; display: inline-block; width: 0; }
+body.md-fix-journal-spacing .journal-entry-page .journal-page-content p + p { margin-top: 0.5em; }

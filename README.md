@@ -1,0 +1,6 @@
+
+
+
+```js
+madness.QuickNames();
+```

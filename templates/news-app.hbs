@@ -1,0 +1,67 @@
+<div class="news-layout">
+    <header class="news-toolbar">
+        <div class="toolbar-group filter-group">
+            <label><i class="fas fa-filter"></i> Filtro</label>
+            <select id="filter-select" name="filter">
+                <option value="all" {{#if (eq filter "all")}}selected{{/if}}>Todas</option>
+                <option value="favorites" {{#if (eq filter "favorites")}}selected{{/if}}>Favoritos</option>
+                <option value="hidden" {{#if (eq filter "hidden")}}selected{{/if}}>Ocultas</option>
+            </select>
+        </div>
+
+        <div class="toolbar-group page-group">
+            <label><i class="fas fa-newspaper"></i> Manchete</label>
+            <select id="page-select" name="pageId" class="main-select">
+                <option value="">-- Selecione uma Matéria --</option>
+                {{#each pages}}
+                    <option value="{{this.id}}" {{#if (eq this.id ../selectedPageId)}}selected{{/if}}>
+                        {{this.name}} {{#if this.isFavorite}}⭐{{/if}}
+                    </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="toolbar-actions">
+            <!-- Adicionada classe btn-fav -->
+            <button type="button" id="btn-favorite" class="action-btn btn-fav {{#if isFavorite}}active{{/if}}" 
+                    data-tooltip="{{#if isFavorite}}Remover Favorito{{else}}Favoritar{{/if}}"
+                    {{#unless selectedPageId}}disabled{{/unless}}>
+                <i class="{{#if isFavorite}}fas{{else}}far{{/if}} fa-star"></i>
+            </button>
+
+            <!-- Adicionada classe btn-hide -->
+            <button type="button" id="btn-hide" class="action-btn btn-hide {{#if isHidden}}active{{/if}}" 
+                    data-tooltip="{{#if isHidden}}Mostrar{{else}}Ocultar{{/if}}"
+                    {{#unless selectedPageId}}disabled{{/unless}}>
+                <i class="fas {{#if isHidden}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+            </button>
+        </div>
+    </header>
+
+    <section class="news-viewport">
+        <div id="news-content-area" class="news-paper {{animationClass}}">
+            {{#if contentPage}}
+                {{#if (eq contentPage.type "image")}}
+                    <h1 class="paper-title">{{contentPage.name}}</h1>
+                    <figure class="paper-figure">
+                        <img src="{{contentPage.src}}" alt="{{contentPage.name}}">
+                        {{#if contentPage.image.caption}}
+                            <figcaption>{{contentPage.image.caption}}</figcaption>
+                        {{/if}}
+                    </figure>
+                {{else}}
+                    <h1 class="paper-title">{{contentPage.name}}</h1>
+                    <div class="paper-body">
+                        {{{contentPage.text.content}}}
+                    </div>
+                {{/if}}
+            {{else}}
+                <div class="paper-empty">
+                    <i class="fas fa-newspaper"></i>
+                    <h3>Edição do Dia</h3>
+                    <p>Selecione uma manchete acima para começar a leitura.</p>
+                </div>
+            {{/if}}
+        </div>
+    </section>
+</div>
