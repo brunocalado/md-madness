@@ -40,6 +40,6 @@
   ],  
   
   "url": "https://github.com/brunocalado/md-madness",
-  "manifest": "https://raw.githubusercontent.com/brunocalado/md-madness/main/module.json",
+  "manifest": "https://raw.githubusercontent.com/brunocalado/md-madness/refs/heads/main/module.json",
   "download": "https://codeload.github.com/brunocalado/md-madness/zip/main",
 }

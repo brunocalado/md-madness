@@ -1,7 +1,7 @@
 # Install
 
 ```js
-https://raw.githubusercontent.com/brunocalado/md-madness/main/module.json
+https://raw.githubusercontent.com/brunocalado/md-madness/refs/heads/main/module.json
 ```
 
 # Macros
