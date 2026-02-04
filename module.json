@@ -1,31 +1,24 @@
 {
   "id": "md-madness",
   "title": "MD Madness",
-  
-  "version": "0.0.1",
-  
+  "version": "0.0.2",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
   },
-  
   "authors": [
     {
       "name": "Madness"
     }
   ],
-  
   "esmodules": [
     "scripts/main.js"
   ],
-  
   "styles": [
     "styles/madness.css"
   ],
-  
   "description": "A customized module for V13 automation.",
-  
-  "packs"  : [
+  "packs": [
     {
       "label": "Names",
       "name": "names",
@@ -36,9 +29,8 @@
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       }
-    }  
-  ],  
-  
+    }
+  ],
   "url": "https://github.com/brunocalado/md-madness",
   "manifest": "https://raw.githubusercontent.com/brunocalado/md-madness/refs/heads/main/module.json",
   "download": "https://codeload.github.com/brunocalado/md-madness/zip/main"
