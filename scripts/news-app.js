@@ -75,7 +75,35 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
                         const pages = adJournal.pages.contents;
                         if (pages.length > 0) {
                             const randomPage = pages[Math.floor(Math.random() * pages.length)];
-                            adHtml = (randomPage.text.content || "").trim();
+                            const rawAd = randomPage.text.content || "";
+
+                            // --- CLEANUP: Remove duplicatas e artefatos do Foundry (ProseMirror) ---
+                            const adDiv = document.createElement("div");
+                            adDiv.innerHTML = rawAd;
+                            
+                            // Remove containers de edição
+                            adDiv.querySelectorAll(".edit-container").forEach(e => e.remove());
+                            
+                            // Remove estilos inline (copiados de dark mode, etc) e IDs de sessão
+                            adDiv.querySelectorAll("*").forEach(e => {
+                                e.removeAttribute("style");
+                                if (e.id && e.id.startsWith("JournalEntryPageProseMirrorSheet")) e.removeAttribute("id");
+                            });
+
+                            const paragraphs = Array.from(adDiv.querySelectorAll("p"));
+                            const seenText = new Set();
+                            const cleanParts = [];
+
+                            paragraphs.forEach(p => {
+                                const txt = p.innerText.trim();
+                                const key = txt.length > 0 ? txt : p.outerHTML; // Deduplica por texto ou HTML
+                                if (!seenText.has(key)) {
+                                    seenText.add(key);
+                                    cleanParts.push(p.outerHTML);
+                                }
+                            });
+
+                            adHtml = cleanParts.length > 0 ? cleanParts.join("") : adDiv.innerHTML;
                             this._cachedAd = adHtml;
                             this._cachedAdId = randomPage.id;
                         }
@@ -242,6 +270,28 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         const btnHide = this.element.querySelector('#btn-hide');
         if (btnHide) btnHide.addEventListener('click', (e) => this._onToggleHide(e));
+
+        // --- OBITUARY IMAGE POPUP ---
+        if (this.uiState.filter === "obituary") {
+            // Seletor corrigido para incluir .news-viewport (usado no CSS atual) e .obituary-list
+            const images = this.element.querySelectorAll(".news-viewport img, .obituary-list img, .news-content-wrapper img");
+            images.forEach(img => {
+                img.style.cursor = "zoom-in";
+                img.style.pointerEvents = "auto";
+
+                img.addEventListener("click", (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const src = img.getAttribute("src") || img.src;
+                    if (src) {
+                        new foundry.applications.apps.ImagePopout({
+                            src: src,
+                            window: { title: "Obituário" }
+                        }).render(true);
+                    }
+                });
+            });
+        }
     }
 
     async _onChangeFilter(event) {
