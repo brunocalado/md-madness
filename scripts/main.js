@@ -78,72 +78,48 @@ Hooks.once('init', () => {
         QuickNames: () => {
             new QuickNamesApp().render(true);
         },
-        /**
-         * Abre o Jornal Animado.
-         * @param {Object} args
-         * @param {string} args.title - O título da janela (Ex: "📰 Arkham Advertiser")
-         * @param {string} args.uuid - O UUID do JournalEntry a ser lido
-         * @param {string} [args.obituary] - UUID do Jornal de Obituários (Opcional)
-         */
         News: (args = {}) => {
-            // Verifica se o UUID foi passado, senão avisa
             if (!args.uuid) {
                 ui.notifications.warn(`${MODULE_ID} | madness.News requer um argumento 'uuid'.`);
                 return;
             }
             new NewsApp(args).render(true);
         },
-        /**
-         * Atualiza o Prototype Token de todos os Actors do mundo em massa.
-         * @param {Object} changes - Objeto com as configurações a serem aplicadas (Ex: { movementAction: "blink" })
-         */
         SetPrototypeToken: async (changes = {}) => {
-            // Verificação de Segurança: Apenas GM
             if (!game.user.isGM) {
                 ui.notifications.warn(`${MODULE_ID} | Apenas o Gamemaster pode executar operações em massa.`);
                 return;
             }
-
-            // Verificação de Dados
             if (!changes || Object.keys(changes).length === 0) {
-                ui.notifications.warn(`${MODULE_ID} | Nenhum parâmetro fornecido. Exemplo de uso: madness.SetPrototypeToken({ movementAction: "blink" })`);
+                ui.notifications.warn(`${MODULE_ID} | Nenhum parâmetro fornecido.`);
                 return;
             }
 
-            // Confirmação (Opcional, mas recomendada para operações destrutivas em massa)
             const confirmed = await Dialog.confirm({
-                title: "Atualização em Massa: Prototype Tokens",
-                content: `<p>Você está prestes a atualizar o <strong>Prototype Token</strong> de <strong>${game.actors.size}</strong> atores.</p>
-                          <p>Alterações: <code>${JSON.stringify(changes)}</code></p>
-                          <p>Isso não pode ser desfeito facilmente. Deseja continuar?</p>`
+                title: "Atualização em Massa",
+                content: `<p>Atualizar <strong>${game.actors.size}</strong> atores?</p><p>Mudanças: <code>${JSON.stringify(changes)}</code></p>`
             });
 
             if (!confirmed) return;
 
-            // Prepara a lista de atualizações (Bulk Update)
             const updates = game.actors.map(actor => ({
                 _id: actor.id,
                 prototypeToken: changes
             }));
 
-            // Executa a atualização
             try {
                 await Actor.updateDocuments(updates);
-                ui.notifications.info(`${MODULE_ID} | Sucesso! ${updates.length} atores foram atualizados.`);
-                console.log(`${MODULE_ID} | SetPrototypeToken executado para ${updates.length} atores.`, changes);
+                ui.notifications.info(`${MODULE_ID} | Sucesso! ${updates.length} atores atualizados.`);
             } catch (err) {
                 console.error(err);
-                ui.notifications.error(`${MODULE_ID} | Erro ao atualizar atores. Veja o console (F12).`);
+                ui.notifications.error(`${MODULE_ID} | Erro ao atualizar atores.`);
             }
         }
     };
-    
-    console.log(`${MODULE_ID} | Global API registered: window.madness`);
 });
 
 /**
  * READY HOOK
- * Note: Marked async to handle settings updates
  */
 Hooks.once('ready', async () => {
     // 1. Check Auto Unpause
@@ -153,40 +129,29 @@ Hooks.once('ready', async () => {
     const useSpacing = game.settings.get(MODULE_ID, SETTINGS.JOURNAL_SPACING);
     toggleJournalSpacing(useSpacing);
 
-    // 3. Apply Default Preferences (Language, Modules, etc)
+    // 3. Apply Default Preferences
     await applyDefaultPreferences();
 });
 
 /**
- * PRE-CREATE ACTOR HOOK (NEW)
- * Intercepta a criação de novos atores para definir o padrão Blink.
+ * PRE-CREATE ACTOR HOOK
  */
 Hooks.on("preCreateActor", (actor) => {
-    // Verifica se a configuração está habilitada
     const useBlink = game.settings.get(MODULE_ID, SETTINGS.TOKEN_BLINK);
-    
     if (useBlink) {
-        // updateSource modifica os dados antes de serem salvos no DB
-        actor.updateSource({
-            "prototypeToken.movementAction": "blink"
-        });
+        actor.updateSource({ "prototypeToken.movementAction": "blink" });
     }
 });
 
 /**
- * SCENE CONTROLS (Quick Names Button)
+ * SCENE CONTROLS
  */
 Hooks.on("getSceneControlButtons", (controls) => {
     let tokenControls;
-
     if (Array.isArray(controls)) {
         tokenControls = controls.find(c => c.name === "token");
-    } else if (typeof controls === "object" && controls !== null) {
-        if (Array.isArray(controls.controls)) {
-            tokenControls = controls.controls.find(c => c.name === "token");
-        } else if (controls.token) {
-            tokenControls = controls.token;
-        }
+    } else if (controls.token) {
+        tokenControls = controls.token;
     }
 
     if (tokenControls && tokenControls.tools) {
@@ -196,11 +161,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
                 title: "Quick Names",
                 icon: "fas fa-book-open",
                 onClick: () => {
-                    if (window.madness && window.madness.QuickNames) {
-                        window.madness.QuickNames();
-                    } else {
-                        ui.notifications.warn("MD Madness features not initialized.");
-                    }
+                    if (window.madness?.QuickNames) window.madness.QuickNames();
                 },
                 button: true
             });
@@ -213,82 +174,74 @@ Hooks.on("getSceneControlButtons", (controls) => {
 /* -------------------------------------------- */
 
 /**
- * Applies the "Hated Configs" fixes and Default Preferences
+ * Tenta definir uma configuração com segurança.
+ * Se falhar por permissão (Player tentando mudar World Setting), ignora silenciosamente.
  */
-async function applyDefaultPreferences() {
-    
-    // --- Core: Language ---
-    const useEnglish = game.settings.get(MODULE_ID, SETTINGS.SET_ENGLISH);
-    const targetLang = useEnglish ? 'en' : 'pt-BR';
-    
-    if (game.settings.get('core', 'language') !== targetLang) {
-        await game.settings.set('core', 'language', targetLang);
-        console.log(`${MODULE_ID} | Language forced to ${targetLang}`);
-    }
-
-    // --- Core: Token Rotation ---
-    const enableRotate = game.settings.get(MODULE_ID, SETTINGS.TOKEN_ROTATE);
-    if (game.settings.get('core', 'tokenAutoRotate') !== enableRotate) {
-        await game.settings.set('core', 'tokenAutoRotate', enableRotate);
-    }
-
-    // --- Core: UI Annoyances (Forced OFF) ---
-    // Only set if they are currently true to avoid spamming writes
-    if (game.settings.get('core', 'chatBubbles') !== false) 
-        await game.settings.set('core', 'chatBubbles', false);
-
-    if (game.settings.get('core', 'chatBubblesPan') !== false) 
-        await game.settings.set('core', 'chatBubblesPan', false);
-
-    if (game.settings.get('core', 'showToolclips') !== false) 
-        await game.settings.set('core', 'showToolclips', false);
-
-
-    // --- External Modules ---
-    
-    // Simple Calendar: Don't open on load
-    if (game.modules.get("foundryvtt-simple-calendar")?.active) {
-        try {
-            await game.settings.set('foundryvtt-simple-calendar', 'open-on-load', false);
-        } catch(e) { /* Ignore if setting key differs in versions */ }
-    }
-
-    // Module Credits: Don't show changelog
-    if (game.modules.get("module-credits")?.active) {
-        try {
-            await game.settings.set('module-credits', 'showNewChangelogsOnLoad', false);
-        } catch(e) { }
-    }
-
-    // DFreds Droppables: Random drop style
-    if (game.modules.get("dfreds-droppables")?.active) {
-        try {
-            await game.settings.set('dfreds-droppables', 'dropStyle', 'random');
-        } catch(e) { }
+async function safeSet(namespace, key, value) {
+    try {
+        const current = game.settings.get(namespace, key);
+        if (current !== value) {
+            await game.settings.set(namespace, key, value);
+            console.log(`${MODULE_ID} | Enforced ${namespace}.${key} = ${value}`);
+        }
+    } catch (err) {
+        // Se for erro de permissão, ignoramos (significa que é World Setting e o user é Player)
+        // Se for outro erro, logamos como aviso
+        if (!err.message?.includes("permission")) {
+            console.warn(`${MODULE_ID} | Failed to set ${namespace}.${key}:`, err);
+        }
     }
 }
 
-
 /**
- * Auto Unpause Logic
+ * Applies preferences safely for both GM and Players
  */
+async function applyDefaultPreferences() {
+    
+    // 1. Language (Tentativa segura para todos)
+    const useEnglish = game.settings.get(MODULE_ID, SETTINGS.SET_ENGLISH);
+    const targetLang = useEnglish ? 'en' : 'pt-BR';
+    await safeSet('core', 'language', targetLang);
+
+    // 2. Token Rotation (Tentativa segura para todos)
+    const enableRotate = game.settings.get(MODULE_ID, SETTINGS.TOKEN_ROTATE);
+    await safeSet('core', 'tokenAutoRotate', enableRotate);
+
+    // 3. UI Annoyances (Tentativa segura para todos)
+    // Chat Bubbles: Tenta desativar para todos. 
+    // Se for World Setting restrita, falhará silenciosamente no Player, mas funcionará no GM.
+    await safeSet('core', 'chatBubbles', false); 
+    await safeSet('core', 'chatBubblesPan', false);
+    await safeSet('core', 'showToolclips', false);
+
+    // 4. External Modules
+    if (game.modules.get("foundryvtt-simple-calendar")?.active) {
+        await safeSet('foundryvtt-simple-calendar', 'open-on-load', false);
+    }
+
+    if (game.modules.get("module-credits")?.active) {
+        await safeSet('module-credits', 'showNewChangelogsOnLoad', false);
+    }
+
+    // 5. Configurações Exclusivas de GM (Para garantir)
+    // Se algo PRECISA ser forçado pelo GM porque o Player não tem acesso nem de leitura/escrita correta
+    if (game.user.isGM) {
+        if (game.modules.get("dfreds-droppables")?.active) {
+            await safeSet('dfreds-droppables', 'dropStyle', 'random');
+        }
+    }
+}
+
 export function handleAutoUnpause() {
     if (!game.user.isGM) return;
     const shouldUnpause = game.settings.get(MODULE_ID, SETTINGS.AUTO_UNPAUSE);
-
     if (shouldUnpause && game.paused) {
         console.log(`${MODULE_ID} | Auto Unpause triggered.`);
         game.togglePause(false, { broadcast: true }); 
     }
 }
 
-/**
- * Journal Spacing Toggle
- */
 export function toggleJournalSpacing(enabled) {
-    if (enabled) {
-        document.body.classList.add('md-fix-journal-spacing');
-    } else {
-        document.body.classList.remove('md-fix-journal-spacing');
-    }
+    if (enabled) document.body.classList.add('md-fix-journal-spacing');
+    else document.body.classList.remove('md-fix-journal-spacing');
 }

@@ -1,7 +1,7 @@
 {
   "id": "md-madness",
   "title": "MD Madness",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -29,8 +29,33 @@
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       }
-    }
+    },
+    {
+      "label": "Macros",
+      "type": "Macro",
+      "name": "macros",
+      "path": "packs/macros",
+      "ownership": {
+        "PLAYER": "NONE",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
+    }    
   ],
+
+  "packFolders": [
+    {
+      "name": "Madness!",
+      "sorting": "a",
+      "color": "#3e0a66",
+      "packs": [        
+        "names",
+        "macros"
+      ],
+      "folders": []
+    }
+  ],  
+  
   "url": "https://github.com/brunocalado/md-madness",
   "manifest": "https://raw.githubusercontent.com/brunocalado/md-madness/refs/heads/main/module.json",
   "download": "https://codeload.github.com/brunocalado/md-madness/zip/main"
