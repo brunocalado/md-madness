@@ -25,6 +25,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         };
 
         this._cachedAd = null;
+        this._cachedAdId = null;
     }
   
     static DEFAULT_OPTIONS = {
@@ -64,27 +65,26 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const hidelist = prefs.hidelist || [];
 
         // --- ADS LOGIC ---
-        let adContent = null;
+        let adHtml = null;
         if (this.newsConfig.ads) {
-            adContent = this._cachedAd;
-            if (!adContent) {
+            adHtml = this._cachedAd;
+            if (!adHtml) {
                 try {
                     const adJournal = fromUuidSync(this.newsConfig.ads) || await fromUuid(this.newsConfig.ads);
                     if (adJournal) {
                         const pages = adJournal.pages.contents;
                         if (pages.length > 0) {
                             const randomPage = pages[Math.floor(Math.random() * pages.length)];
-                            const tempDiv = document.createElement("div");
-                            tempDiv.innerHTML = randomPage.text.content;
-                            adContent = (tempDiv.textContent || tempDiv.innerText || "").trim();
-                            this._cachedAd = adContent;
+                            adHtml = (randomPage.text.content || "").trim();
+                            this._cachedAd = adHtml;
+                            this._cachedAdId = randomPage.id;
                         }
                     }
                 } catch (err) {
                     console.warn("NewsApp | Erro ao carregar Ads:", err);
                 }
             }
-            if (!adContent) adContent = "Anuncie aqui! Contate a redação.";
+            if (!adHtml) adHtml = "<p>Anuncie aqui! Contate a redação.</p>";
         } 
 
         // --- PAGE LOGIC ---
@@ -130,7 +130,35 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
         let contentPage = null;
         if (this.uiState.viewedPageId && !isObituaryMode) {
-            contentPage = journal ? journal.pages.get(this.uiState.viewedPageId) : null;
+            const originalPage = journal ? journal.pages.get(this.uiState.viewedPageId) : null;
+            if (originalPage) {
+                contentPage = {
+                    id: originalPage.id,
+                    name: originalPage.name,
+                    type: originalPage.type,
+                    src: originalPage.src,
+                    image: originalPage.image,
+                    text: { content: originalPage.text.content }
+                };
+
+                if (adHtml && this._cachedAdId !== this.uiState.viewedPageId) {
+                    const adContainer = `<div class="news-ad-box" style="border: 6px double #222; padding: 15px; margin: 20px 0; background: #c0b8a0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-align: center;">${adHtml}</div>`;
+                    const tempDiv = document.createElement("div");
+                    tempDiv.innerHTML = contentPage.text.content;
+                    
+                    // SEGURANÇA: Verifica se já existe um box de anúncio no conteúdo (previne duplicação se a página foi salva com o ad)
+                    if (!tempDiv.querySelector(".news-ad-box")) {
+                        const paragraphs = Array.from(tempDiv.querySelectorAll("p"));
+                        if (paragraphs.length > 0) {
+                            const midIndex = Math.floor(paragraphs.length / 2);
+                            paragraphs[midIndex].insertAdjacentHTML("afterend", adContainer);
+                            contentPage.text.content = tempDiv.innerHTML;
+                        } else {
+                            contentPage.text.content += adContainer;
+                        }
+                    }
+                }
+            }
         }
 
         const isFavorite = this.uiState.selectedPageId ? favorites.includes(this.uiState.selectedPageId) : false;
@@ -151,7 +179,7 @@ export class NewsApp extends HandlebarsApplicationMixin(ApplicationV2) {
             isFavorite,
             isHidden,
             animationClass: this.uiState.animationClass,
-            adContent: adContent,
+            adContent: null,
             enableObituary: !!this.newsConfig.obituary, 
             isObituaryMode: isObituaryMode,
             obituaryList: obituaryList 
