@@ -25,6 +25,13 @@ Todos os seus atores no mundo serão colocados como teleporte no tipo de movimen
 madness.SetPrototypeToken({movementAction: "blink"})
 ```
 
+Vai selecionar um usuário conectado e exibir a arte do actor dele.
+```js
+madness.Select();
+```
+
+
+
 # Stuff
 
 - Todos os novos actors criados são colocados com o movimento blink por padrão.

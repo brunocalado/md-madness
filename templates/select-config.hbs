@@ -1,0 +1,36 @@
+<div class="select-player-config">
+    <p class="notes">Configure o nome e a imagem que aparecerão no "Splash". Se o nome for deixado em branco, será usado o nome do Personagem (Actor) e depois o nome do Usuário.</p>
+
+    <div class="players-list">
+        {{#each users}}
+        <div class="form-group player-row">
+            <!-- Info do Jogador (Lado Esquerdo) -->
+            <div class="player-info">
+                <img src="{{this.avatar}}" class="player-avatar-small">
+                <div class="player-names">
+                    <span class="user-name">User: <strong>{{this.userName}}</strong></span>
+                    <span class="actor-name">Actor: <em>{{this.actorName}}</em></span>
+                </div>
+            </div>
+
+            <!-- Campos de Configuração (Lado Direito) -->
+            <div class="form-fields">
+                <div class="field-group">
+                    <label>Nome Custom:</label>
+                    <input type="text" name="{{this.id}}.name" value="{{this.customName}}" placeholder="Padrão (Actor/User)">
+                </div>
+                <div class="field-group">
+                    <label>Imagem:</label>
+                    <file-picker name="{{this.id}}.image" type="image" value="{{this.customImage}}"></file-picker>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+
+    <div class="form-footer">
+        <button type="submit" name="submit" class="save-button">
+            <i class="fas fa-save"></i> Salvar Configurações
+        </button>
+    </div>
+</div>

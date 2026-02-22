@@ -1,5 +1,6 @@
 import { QuickNamesApp } from "./quick-names-app.js";
 import { NewsApp } from "./news-app.js";
+import { SelectPlayerAPI, SelectPlayerConfig } from "./select-player-app.js";
 
 /**
  * GLOBAL CONSTANTS
@@ -11,7 +12,9 @@ export const SETTINGS = {
     JOURNAL_SPACING: 'journalSpacing',
     SET_ENGLISH: 'setEnglish',
     TOKEN_ROTATE: 'tokenAutoRotate',
-    TOKEN_BLINK: 'tokenAutoBlink'
+    TOKEN_BLINK: 'tokenAutoBlink',
+    SELECT_PLAYER_CONFIG: 'selectPlayerConfig',
+    SELECT_PLAYER_SOUND: 'selectPlayerSound'
 };
 
 /**
@@ -73,6 +76,36 @@ Hooks.once('init', () => {
         default: true
     });
 
+    // 6. Select Player - Configuração de jogadores (imagem e nome)
+    game.settings.register(MODULE_ID, SETTINGS.SELECT_PLAYER_CONFIG, {
+        name: "Player Configuration",
+        scope: "world",
+        config: false,
+        type: Object,
+        default: {}
+    });
+
+    // 7. Select Player - Som de seleção
+    game.settings.register(MODULE_ID, SETTINGS.SELECT_PLAYER_SOUND, {
+        name: "Som de Seleção",
+        hint: "Arquivo de áudio que toca quando um jogador é sorteado.",
+        scope: "world",
+        config: true,
+        type: String,
+        default: "modules/md-madness/assets/sfx/selected.mp3",
+        filePicker: "audio"
+    });
+
+    // 8. Select Player - Menu de configuração
+    game.settings.registerMenu(MODULE_ID, 'selectPlayerMenu', {
+        name: "Configurar Jogadores (Splash & Nomes)",
+        label: "Abrir Configuração",
+        hint: "Defina imagens e nomes personalizados para o sorteio.",
+        icon: "fas fa-user-cog",
+        type: SelectPlayerConfig,
+        restricted: true
+    });
+
     // --- REGISTER GLOBAL API ---
     window.madness = {
         QuickNames: () => {
@@ -85,6 +118,8 @@ Hooks.once('init', () => {
             }
             new NewsApp(args).render(true);
         },
+        Select: SelectPlayerAPI.Players.bind(SelectPlayerAPI),
+        SelectConfig: () => new SelectPlayerConfig().render(true),
         SetPrototypeToken: async (changes = {}) => {
             if (!game.user.isGM) {
                 ui.notifications.warn(`${MODULE_ID} | Apenas o Gamemaster pode executar operações em massa.`);
@@ -166,6 +201,17 @@ Hooks.on("getSceneControlButtons", (controls) => {
                 button: true
             });
         }
+    }
+});
+
+/**
+ * SELECT PLAYER: createChatMessage Hook
+ * Sincroniza o efeito visual (splash) entre todos os clientes.
+ */
+Hooks.on('createChatMessage', (message) => {
+    const flags = message.flags?.[MODULE_ID];
+    if (flags && flags.isSelectResult) {
+        SelectPlayerAPI.showSplash(flags.image, flags.name);
     }
 });
 

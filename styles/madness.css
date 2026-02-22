@@ -259,3 +259,160 @@
 .md-news-app .journal-entry-page .journal-page-content p:empty::before,
 .md-news-app .journal-entry-page .journal-page-content p:has(br:only-child)::before { content: "\00a0"; display: inline-block; width: 0; }
 .md-news-app .journal-entry-page .journal-page-content p + p { margin-top: 0.5em; }
+
+
+/* ==================================================== */
+/* SELECT PLAYER STYLES                                 */
+/* (Originado do módulo select-player)                  */
+/* ==================================================== */
+
+/* --- Chat Message Card --- */
+
+.select-player-card {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border-dark-primary);
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+}
+
+.select-player-card h3 {
+    margin: 0 0 10px 0;
+    color: var(--color-text-hyperlink);
+    border-bottom: 1px solid var(--color-border-light-2);
+}
+
+.select-player-card .winner-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.select-player-card .winner-info img {
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #000;
+}
+
+.select-player-card .winner-name {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+/* --- Configuration Menu --- */
+
+.select-player-config .player-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-border-light-2);
+    border-radius: 4px;
+    gap: 15px;
+}
+
+.select-player-config .player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 150px;
+}
+
+.select-player-config .player-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #000;
+    object-fit: cover;
+    margin: 0;
+}
+
+.select-player-config .player-names {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8em;
+    line-height: 1.2;
+}
+
+.select-player-config .form-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.select-player-config .field-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.select-player-config .field-group label {
+    flex: 0 0 80px;
+    font-size: 0.9em;
+    color: var(--color-text-dark-secondary);
+    margin: 0;
+}
+
+/* --- Splash Screen (Overlay) --- */
+
+#select-player-splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: selectPlayerPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+#select-player-splash .splash-content {
+    text-align: center;
+    filter: drop-shadow(0 0 15px rgba(0,0,0,0.9));
+}
+
+#select-player-splash .splash-img {
+    max-width: 450px;
+    max-height: 450px;
+    border-radius: 20px;
+    border: 4px solid #fff;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+    display: block;
+    margin: 0 auto;
+    background: #000;
+}
+
+#select-player-splash .splash-text {
+    margin-top: 10px;
+    font-size: 4em;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    font-family: "Signika", sans-serif;
+}
+
+#select-player-splash.fade-out {
+    animation: selectPlayerFadeOut 0.5s ease forwards;
+}
+
+@keyframes selectPlayerPopIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes selectPlayerFadeOut {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
