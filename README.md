@@ -30,6 +30,16 @@ Vai selecionar um usuário conectado e exibir a arte do actor dele.
 madness.Select();
 ```
 
+Permite você alterar as permissões de subpastas.
+```js
+madness.Ownership();
+```
+
+Permite dividir um journal em vários journals e pages.
+```js
+madness.JournalSplitter();
+```
+
 
 
 # Stuff

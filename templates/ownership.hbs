@@ -1,0 +1,70 @@
+<div class="om-container">
+
+    {{!-- Header --}}
+    <div class="om-header">
+        <div class="om-search-box">
+            <input type="text" id="om-search-input" placeholder="Buscar folders e documentos..." />
+        </div>
+        <div class="om-selection-actions">
+            <button type="button" data-action="selectAll" class="om-small-btn">
+                <i class="fas fa-check-double"></i> Selecionar Todos
+            </button>
+            <button type="button" data-action="deselectAll" class="om-small-btn">
+                <i class="fas fa-times"></i> Limpar
+            </button>
+            <span class="om-selected-counter">
+                Selecionados: <span id="om-selected-count">0</span>
+            </span>
+        </div>
+    </div>
+
+    {{!-- Main Content --}}
+    <div class="om-content">
+
+        {{!-- Folder Tree --}}
+        <div class="om-tree-panel">
+            <h3><i class="fas fa-sitemap"></i> Folders e Documentos</h3>
+            <div class="om-folder-tree">
+                {{{treeHtml}}}
+            </div>
+        </div>
+
+        {{!-- Config Panel --}}
+        <div class="om-config-panel">
+            <h3><i class="fas fa-cog"></i> Configuração</h3>
+
+            <div class="om-config-section">
+                <label for="om-target-user">Usuário:</label>
+                <select id="om-target-user">
+                    <option value="default">Padrão (Default)</option>
+                    {{#each users}}
+                    <option value="{{this.id}}">{{this.name}}{{#if this.isGM}} (GM){{/if}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="om-config-section">
+                <label for="om-ownership-level">Nível de Ownership:</label>
+                <select id="om-ownership-level">
+                    {{#each ownershipLevels}}
+                    <option value="{{this.value}}">{{this.label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="om-config-section">
+                <h4>Preview</h4>
+                <div id="om-preview-content" class="om-preview-box">
+                    Selecione folders para ver o preview...
+                </div>
+            </div>
+
+            <div class="om-action-buttons">
+                <button type="button" data-action="applyOwnership" class="om-apply-btn">
+                    <i class="fas fa-check"></i> Aplicar Ownership
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>

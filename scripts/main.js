@@ -1,6 +1,8 @@
 import { QuickNamesApp } from "./quick-names-app.js";
 import { NewsApp } from "./news-app.js";
 import { SelectPlayerAPI, SelectPlayerConfig } from "./select-player-app.js";
+import { OwnershipApp } from "./ownership-app.js";
+import { JournalSplitterApp } from "./journal-splitter-app.js";
 
 /**
  * GLOBAL CONSTANTS
@@ -120,6 +122,8 @@ Hooks.once('init', () => {
         },
         Select: SelectPlayerAPI.Players.bind(SelectPlayerAPI),
         SelectConfig: () => new SelectPlayerConfig().render(true),
+        Ownership: () => new OwnershipApp().render(true),
+        JournalSplitter: () => new JournalSplitterApp().render(true),
         SetPrototypeToken: async (changes = {}) => {
             if (!game.user.isGM) {
                 ui.notifications.warn(`${MODULE_ID} | Apenas o Gamemaster pode executar operações em massa.`);
