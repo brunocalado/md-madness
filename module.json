@@ -1,10 +1,10 @@
 {
   "id": "md-madness",
   "title": "MD Madness",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "compatibility": {
-    "minimum": "13",
-    "verified": "13"
+    "minimum": "14",
+    "verified": "14"
   },
   "authors": [
     {
@@ -15,9 +15,14 @@
     "scripts/main.js"
   ],
   "styles": [
-    "styles/madness.css"
+    "styles/base.css",
+    "styles/quick-names-app.css",
+    "styles/news-app.css",
+    "styles/select-player-config.css",
+    "styles/ownership-app.css",
+    "styles/journal-splitter-app.css"
   ],
-  "description": "A customized module for V13 automation.",
+  "description": "A customized module for Foundry VTT V14.",
   "packs": [
     {
       "label": "Names",

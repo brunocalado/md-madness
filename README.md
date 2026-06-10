@@ -1,5 +1,8 @@
 # Install
 
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-red?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/mestredigital)
+
 ```js
 https://raw.githubusercontent.com/brunocalado/md-madness/refs/heads/main/module.json
 ```

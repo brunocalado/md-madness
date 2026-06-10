@@ -1,0 +1,114 @@
+/* ============================================================
+   BASE — Module-wide globals, injected DOM elements.
+   Rules here are intentionally outside .md-madness scope
+   because they target: body classes, chat messages, and
+   the select-player splash (all injected above app windows).
+   ============================================================ */
+
+/* Journal Spacing Fix
+   Applied when body.md-fix-journal-spacing is active (see main.js).
+   Targets the journal page rendering in the core journal sheet. */
+body.md-fix-journal-spacing {
+    .journal-entry-page .journal-page-content p { min-height: 1.5em; }
+    .journal-entry-page .journal-page-content p:empty::before,
+    .journal-entry-page .journal-page-content p:has(br:only-child)::before {
+        content: "\00a0";
+        display: inline-block;
+        width: 0;
+    }
+    .journal-entry-page .journal-page-content p + p { margin-top: 0.5em; }
+}
+
+/* ---- Select Player: Chat Card ---- */
+
+.select-player-card {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border-dark-primary);
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+
+    h3 {
+        margin: 0 0 10px 0;
+        color: var(--color-text-hyperlink);
+        border-bottom: 1px solid var(--color-border-light-2);
+    }
+
+    .winner-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        img {
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #000;
+        }
+    }
+
+    .winner-name {
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+}
+
+/* ---- Select Player: Full-Screen Splash ---- */
+
+#select-player-splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: mdm-selectPlayerPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+    .splash-content {
+        text-align: center;
+        filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.9));
+    }
+
+    .splash-img {
+        max-width: 450px;
+        max-height: 450px;
+        border-radius: 20px;
+        border: 4px solid #fff;
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+        display: block;
+        margin: 0 auto;
+        background: #000;
+    }
+
+    .splash-text {
+        margin-top: 10px;
+        font-size: 4em;
+        font-weight: 900;
+        color: #fff;
+        text-transform: uppercase;
+        text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        font-family: "Signika", sans-serif;
+    }
+
+    &.fade-out {
+        animation: mdm-selectPlayerFadeOut 0.5s ease forwards;
+    }
+}
+
+@keyframes mdm-selectPlayerPopIn {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes mdm-selectPlayerFadeOut {
+    0%   { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
